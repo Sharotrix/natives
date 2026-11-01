@@ -1,0 +1,58 @@
+@baseUrl = http://localhost:5080
+@ticketId = VRP-01234567
+@ticketToken = paste-the-player-access-code-here
+@adminToken = replace-with-Support__AdminToken
+
+### Health
+GET {{baseUrl}}/api/health
+
+### Create a player ticket (copy ticketId and accessCode from the response)
+POST {{baseUrl}}/api/tickets
+Content-Type: application/json
+
+{
+  "playerName": "Beispielspieler",
+  "contact": "Discord: beispiel",
+  "category": "Launcher",
+  "subject": "Launcher startet nicht",
+  "message": "Beim Starten erscheint eine Fehlermeldung. Ich habe bereits einen Neustart versucht."
+}
+
+### Read the player ticket
+GET {{baseUrl}}/api/tickets/{{ticketId}}
+X-Ticket-Token: {{ticketToken}}
+
+### Player follow-up
+POST {{baseUrl}}/api/tickets/{{ticketId}}/messages
+X-Ticket-Token: {{ticketToken}}
+Content-Type: application/json
+
+{
+  "message": "Ich habe die Fehlermeldung jetzt als Screenshot."
+}
+
+### List all tickets as support
+GET {{baseUrl}}/api/admin/tickets
+Authorization: Bearer {{adminToken}}
+
+### Read one ticket as support
+GET {{baseUrl}}/api/admin/tickets/{{ticketId}}
+Authorization: Bearer {{adminToken}}
+
+### Reply as support
+POST {{baseUrl}}/api/admin/tickets/{{ticketId}}/messages
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "message": "Danke für die Meldung. Bitte installiere den Launcher erneut und gib uns Bescheid."
+}
+
+### Update ticket status
+PATCH {{baseUrl}}/api/admin/tickets/{{ticketId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "InProgress"
+}
