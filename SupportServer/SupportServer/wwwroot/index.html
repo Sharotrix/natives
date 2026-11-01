@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>VisionRP Support</title>
+  <style>
+    :root{font-family:Segoe UI,system-ui,sans-serif;color:#eef5ff;background:#070c16;font-synthesis:none}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 75% -20%,#12344d 0,transparent 52%),#070c16}
+    button,input,textarea,select{font:inherit}
+    button{cursor:pointer}
+    .shell{max-width:1380px;margin:auto;padding:30px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#05bce8;color:#06121b;font-size:25px;font-weight:800}
+    h1{font-size:20px;margin:0}.sub{color:#8ba3bf;font-size:12px;margin-top:3px}
+    .layout{display:grid;grid-template-columns:minmax(290px,390px) 1fr;gap:18px}
+    .panel{border:1px solid #1a2c41;background:#0b1422;border-radius:15px;overflow:hidden}
+    .panel-head{padding:18px 20px;border-bottom:1px solid #192a3d;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h2{font-size:15px;margin:0}.tools{display:flex;gap:8px;align-items:center}
+    select,input,textarea{width:100%;border:1px solid #293d54;border-radius:8px;background:#080f1b;color:#eff6ff;padding:10px 12px;outline:none}
+    select:focus,input:focus,textarea:focus{border-color:#24c9ee}
+    .tools select{width:auto;padding:8px 10px;font-size:12px}
+    .ticket-list{max-height:calc(100vh - 190px);overflow:auto;padding:9px}
+    .ticket{width:100%;text-align:left;color:inherit;background:transparent;border:1px solid transparent;border-radius:10px;padding:13px;margin:2px 0}
+    .ticket:hover,.ticket.active{background:#102236;border-color:#1d4660}
+    .ticket-title{font-size:13px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ticket-meta{display:flex;justify-content:space-between;gap:8px;color:#8ba3bf;font-size:11px;margin-top:7px}
+    .badge{border-radius:20px;background:#1a3045;color:#8ce7fa;padding:3px 8px;font-size:10px;white-space:nowrap}
+    .detail{min-height:calc(100vh - 160px);display:flex;flex-direction:column}
+    .detail-head{padding:20px;border-bottom:1px solid #192a3d}
+    .detail-title{font-size:19px;font-weight:700}
+    .detail-info{font-size:12px;color:#91a8c4;line-height:1.8;margin-top:9px;white-space:pre-wrap}
+    .messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:11px;min-height:300px;max-height:calc(100vh - 410px)}
+    .message{border:1px solid #1a3045;background:#0e1b2b;border-radius:10px;padding:12px 14px;max-width:88%;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.55}
+    .message.support{align-self:flex-end;background:#0d2b3a;border-color:#14546b}
+    .message-meta{display:block;color:#89a6bf;font-size:10px;margin-bottom:5px}
+    .reply{padding:14px 18px 18px;border-top:1px solid #192a3d}
+    textarea{min-height:100px;resize:vertical}
+    .actions{display:flex;justify-content:space-between;gap:10px;margin-top:10px}
+    .primary{border:0;border-radius:8px;background:#09bce5;color:#04111a;font-weight:700;padding:10px 16px}
+    .secondary{border:1px solid #2a4057;border-radius:8px;background:#122134;color:#d9e8f7;padding:9px 13px}
+    .empty{color:#8299b2;text-align:center;padding:35px 20px;font-size:13px}
+    .login{max-width:430px;margin:10vh auto;padding:25px}
+    .login form{display:grid;gap:14px;margin-top:18px}
+    .notice{min-height:18px;color:#ffaf9e;font-size:12px}
+    .hidden{display:none!important}
+    @media(max-width:760px){.shell{padding:16px}.layout{grid-template-columns:1fr}.ticket-list{max-height:260px}.detail{min-height:560px}.messages{max-height:400px}header{margin-bottom:16px}}
+  </style>
+</head>
+<body>
+  <main id="login" class="panel login">
+    <div class="brand"><div class="logo">V</div><div><h1>Support-Verwaltung</h1><div class="sub">VisionRP Tickets sicher bearbeiten</div></div></div>
+    <form id="login-form">
+      <label for="admin-token">Admin-Zugangstoken</label>
+      <input id="admin-token" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit">Anmelden</button>
+      <div id="login-error" class="notice"></div>
+    </form>
+  </main>
+  <main id="app" class="shell hidden">
+    <header>
+      <div class="brand"><div class="logo">V</div><div><h1>VisionRP Support</h1><div class="sub">Ticket-Center</div></div></div>
+      <button id="logout" class="secondary">Abmelden</button>
+    </header>
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head"><h2>Tickets</h2><div class="tools">
+          <select id="status-filter" aria-label="Nach Status filtern">
+            <option value="">Alle</option><option value="Open">Offen</option><option value="InProgress">In Bearbeitung</option>
+            <option value="WaitingForPlayer">Warten auf Spieler</option><option value="Resolved">Gelöst</option><option value="Closed">Geschlossen</option>
+          </select><button id="refresh" class="secondary" title="Aktualisieren">↻</button>
+        </div></div>
+        <div id="ticket-list" class="ticket-list"><div class="empty">Melde dich an, um Tickets zu laden.</div></div>
+      </section>
+      <section class="panel detail">
+        <div id="detail-empty" class="empty">Wähle links ein Ticket aus.</div>
+        <div id="ticket-detail" class="hidden">
+          <div class="detail-head">
+            <div class="tools" style="justify-content:space-between">
+              <div id="ticket-title" class="detail-title"></div>
+              <select id="ticket-status" aria-label="Ticketstatus">
+                <option value="Open">Offen</option><option value="InProgress">In Bearbeitung</option>
+                <option value="WaitingForPlayer">Warten auf Spieler</option><option value="Resolved">Gelöst</option><option value="Closed">Geschlossen</option>
+              </select>
+            </div>
+            <div id="ticket-info" class="detail-info"></div>
+          </div>
+          <div id="messages" class="messages"></div>
+          <form id="reply-form" class="reply">
+            <textarea id="reply-text" maxlength="5000" placeholder="Antwort an den Spieler …" required></textarea>
+            <div class="actions"><span id="reply-notice" class="notice"></span><button class="primary" type="submit">Antwort senden</button></div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const loginPanel = document.querySelector("#login");
+    const appPanel = document.querySelector("#app");
+    const list = document.querySelector("#ticket-list");
+    const messages = document.querySelector("#messages");
+    let token = "";
+    let selectedId = "";
+    let tickets = [];
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}`, ...options.headers }
+      });
+      if (!response.ok) {
+        if (response.status === 401) throw new Error("Zugangstoken ungültig oder abgelaufen.");
+        const detail = await response.text();
+        throw new Error(detail || `Anfrage fehlgeschlagen (${response.status}).`);
+      }
+      return response.status === 204 ? null : response.json();
+    }
+
+    function statusLabel(status) {
+      return ({Open:"Offen",InProgress:"In Bearbeitung",WaitingForPlayer:"Warten auf Spieler",Resolved:"Gelöst",Closed:"Geschlossen"})[status] || status;
+    }
+
+    function dateLabel(value) {
+      return new Date(value).toLocaleString("de-DE");
+    }
+
+    function renderList() {
+      list.replaceChildren();
+      if (tickets.length === 0) {
+        list.innerHTML = '<div class="empty">Keine Tickets in diesem Filter.</div>';
+        return;
+      }
+      for (const ticket of tickets) {
+        const button = document.createElement("button");
+        button.className = `ticket${ticket.id === selectedId ? " active" : ""}`;
+        const title = document.createElement("div");
+        title.className = "ticket-title";
+        title.textContent = ticket.subject;
+        const meta = document.createElement("div");
+        meta.className = "ticket-meta";
+        const player = document.createElement("span");
+        player.textContent = `${ticket.playerName} · ${dateLabel(ticket.updatedAt)}`;
+        const badge = document.createElement("span");
+        badge.className = "badge";
+        badge.textContent = statusLabel(ticket.status);
+        meta.append(player, badge);
+        button.append(title, meta);
+        button.addEventListener("click", () => loadTicket(ticket.id));
+        list.append(button);
+      }
+    }
+
+    async function loadTickets() {
+      const filter = document.querySelector("#status-filter").value;
+      tickets = await api(`/api/admin/tickets${filter ? `?status=${encodeURIComponent(filter)}` : ""}`);
+      renderList();
+      if (selectedId && !tickets.some(ticket => ticket.id === selectedId)) {
+        selectedId = "";
+        document.querySelector("#ticket-detail").classList.add("hidden");
+        document.querySelector("#detail-empty").classList.remove("hidden");
+      }
+    }
+
+    async function loadTicket(id) {
+      try {
+        selectedId = id;
+        const ticket = await api(`/api/admin/tickets/${encodeURIComponent(id)}`);
+        renderTicket(ticket);
+        renderList();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderTicket(ticket) {
+      document.querySelector("#detail-empty").classList.add("hidden");
+      document.querySelector("#ticket-detail").classList.remove("hidden");
+      document.querySelector("#ticket-title").textContent = `${ticket.id} · ${ticket.subject}`;
+      document.querySelector("#ticket-info").textContent =
+        `${ticket.playerName} · ${ticket.contact}\n${ticket.category} · Erstellt: ${dateLabel(ticket.createdAt)} · Aktualisiert: ${dateLabel(ticket.updatedAt)}`;
+      document.querySelector("#ticket-status").value = ticket.status;
+      messages.replaceChildren();
+      for (const item of ticket.messages) {
+        const bubble = document.createElement("div");
+        bubble.className = `message${item.author === "Support" ? " support" : ""}`;
+        const meta = document.createElement("span");
+        meta.className = "message-meta";
+        meta.textContent = `${item.author} · ${dateLabel(item.createdAt)}`;
+        const body = document.createElement("span");
+        body.textContent = item.content;
+        bubble.append(meta, body);
+        messages.append(bubble);
+      }
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function showError(text) {
+      document.querySelector("#reply-notice").textContent = text;
+    }
+
+    document.querySelector("#login-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      token = document.querySelector("#admin-token").value.trim();
+      try {
+        await loadTickets();
+        loginPanel.classList.add("hidden");
+        appPanel.classList.remove("hidden");
+        document.querySelector("#login-error").textContent = "";
+      } catch (error) {
+        token = "";
+        document.querySelector("#login-error").textContent = error.message;
+      }
+    });
+
+    document.querySelector("#logout").addEventListener("click", () => {
+      token = "";
+      selectedId = "";
+      tickets = [];
+      document.querySelector("#admin-token").value = "";
+      appPanel.classList.add("hidden");
+      loginPanel.classList.remove("hidden");
+    });
+
+    document.querySelector("#refresh").addEventListener("click", async () => {
+      try { await loadTickets(); } catch (error) { showError(error.message); }
+      if (selectedId) await loadTicket(selectedId);
+    });
+
+    document.querySelector("#status-filter").addEventListener("change", async () => {
+      try { await loadTickets(); } catch (error) { showError(error.message); }
+    });
+
+    document.querySelector("#ticket-status").addEventListener("change", async event => {
+      try {
+        const ticket = await api(`/api/admin/tickets/${encodeURIComponent(selectedId)}/status`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: event.target.value })
+        });
+        renderTicket(ticket);
+        await loadTickets();
+      } catch (error) { showError(error.message); }
+    });
+
+    document.querySelector("#reply-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const textarea = document.querySelector("#reply-text");
+      const button = event.currentTarget.querySelector("button");
+      button.disabled = true;
+      showError("");
+      try {
+        const ticket = await api(`/api/admin/tickets/${encodeURIComponent(selectedId)}/messages`, {
+          method: "POST",
+          body: JSON.stringify({ message: textarea.value })
+        });
+        textarea.value = "";
+        renderTicket(ticket);
+        await loadTickets();
+      } catch (error) { showError(error.message); }
+      finally { button.disabled = false; }
+    });
+  </script>
+</body>
+</html>
